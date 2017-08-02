@@ -1,0 +1,147 @@
+<script type='text/javascript'>
+  /* global google */
+/* global MarkerClusterer */
+// eslint-disable-next-line no-unused-vars
+var jekyllMaps = (function () {
+  'use strict'
+  var clusterSettings = {}
+  var clusterReady = false
+  var mapReady = false
+  var options = {}
+  var data = []
+  var maps = []
+
+  return {
+    initializeMap: initializeMap,
+    initializeCluster: initializeCluster,
+    register: register
+  }
+
+  /**
+   * Setup Google Maps options and call renderer.
+   */
+  function initializeMap () {
+    options = {
+      mapTypeId: google.maps.MapTypeId.ROADMAP,
+      center: new google.maps.LatLng(0, 0)
+    }
+    mapReady = true
+    render()
+  }
+
+  /**
+   * Register map data to be rendered once Google Maps API is loaded.
+   *
+   * @param string id
+   * @param Array locations
+   * @param Object settings
+   */
+  function register (id, locations, options) {
+    data.push({ id: id, locations: locations, options: options })
+    render()
+  }
+
+  /**
+   * Render maps data if Google Maps API is loaded.
+   */
+  function render () {
+    if (!mapReady) return
+
+    while (data.length > 0) {
+      var item = data.pop()
+      var bounds = new google.maps.LatLngBounds()
+      var mapOptions = Object.assign({}, options, item.options)
+      var map = new google.maps.Map(document.getElementById(item.id), mapOptions)
+      var infoWindow = new google.maps.InfoWindow()
+      var markers = item.locations.map(createMarker)
+
+      map.fitBounds(bounds)
+      google.maps.event.addListenerOnce(map, 'bounds_changed', function() {
+        if (this.customZoom) this.setZoom(this.customZoom)
+      })
+      if (mapOptions.useCluster) {
+        maps.push({ map: map, markers: markers })
+        processCluster()
+      }
+    }
+
+    function createMarker (location) {
+      var position = new google.maps.LatLng(location.latitude, location.longitude)
+      bounds.extend(position)
+      if (!mapOptions.showMarker) return false
+
+      var marker = new google.maps.Marker({
+        position: position,
+        title: location.title,
+        image: location.image,
+        url: location.url,
+        map: map
+      })
+      if (mapOptions.showMarkerPopup) marker.addListener('click', markerPopup)
+
+      return marker
+    }
+
+    function markerPopup () {
+      var contentHtml = '<div class="map-info-window"><h5>' + this.title + '</h5>'
+      var imageHtml = '<img src="' + this.image + '" alt="' + this.title + '"/>'
+      if (this.url.length > 0) {
+        var linkText = this.image.length > 0 ? imageHtml : 'View'
+        contentHtml += '<a href="' + this.url + '">' + linkText + '</a></div>'
+      } else if (this.image.length > 0) {
+        contentHtml += imageHtml
+      }
+      infoWindow.setContent(contentHtml)
+      infoWindow.open(map, this)
+    }
+  }
+
+  function initializeCluster (settings) {
+    clusterReady = true
+    clusterSettings = settings || {}
+    processCluster()
+  }
+
+  function processCluster () {
+    if (!clusterReady) return
+
+    while (maps.length > 0) {
+      var obj = maps.pop()
+      // eslint-disable-next-line no-new
+      new MarkerClusterer(obj.map, obj.markers, {
+        gridSize: clusterSettings.grid_size || 25,
+        imagePath: 'https://cdn.rawgit.com/googlemaps/js-marker-clusterer/gh-pages/images/m'
+      })
+    }
+  }
+}())
+/* Object.assign polyfill */
+if (typeof Object.assign !== 'function') {
+  Object.assign = function (target) {
+    'use strict'
+    if (target == null) {
+      throw new TypeError('Cannot convert undefined or null to object')
+    }
+
+    target = Object(target)
+    for (var index = 1; index < arguments.length; index++) {
+      var source = arguments[ index ]
+      if (source != null) {
+        for (var key in source) {
+          if (Object.prototype.hasOwnProperty.call(source, key)) {
+            target[ key ] = source[ key ]
+          }
+        }
+      }
+    }
+    return target
+  }
+}
+
+</script>
+<script async defer src='https://maps.googleapis.com/maps/api/js?key=AIzaSyCocy6_kZ4oaS0t1nrOMYsEZkbr6YcZPrU&callback=jekyllMaps.initializeMap'></script>
+
+<script async defer src='https://cdn.rawgit.com/googlemaps/js-marker-clusterer/gh-pages/src/markerclusterer.js'
+        onload='jekyllMaps.initializeCluster({})'></script>
+
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title> How you can reach us</title><meta name="description" content="Making a difference to people's lives. "><link rel="canonical" href="https://elken.github.io/humanity-torbay//contact/"><link rel="alternate" type="application/rss+xml" title="Humanity Torbay" href="https://elken.github.io/humanity-torbay//feed.xml"><link href='https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|Roboto+Condensed:700&subset=latin' rel='stylesheet' type='text/css'><link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet"><link rel="stylesheet" href="/assets/css/main.css"><meta property="og:url" content="https://elken.github.io/humanity-torbay//contact/"><meta property="og:type" content="website"><meta property="og:title" content="Contact"><meta property="og:description" content="How you can reach us"><meta property="og:site_name" content="Humanity Torbay"><meta name="twitter:card" content="summary"><meta name="twitter:url" content="https://elken.github.io/humanity-torbay//contact/"><meta name="twitter:title" content="Contact"><meta name="twitter:description" content="How you can reach us"><meta property="og:image" content="https://elken.github.io/humanity-torbay//assets/images/logo.png"><meta name="twitter:image" content="https://elken.github.io/humanity-torbay//assets/images/logo.png"><body><div id="shadow"></div><header class="main-header content-wrapper"> <input type="checkbox" id="menu-checkbox" /><nav class="center-wrapper nav-main"> <a class="blog-logo" href="/"> Humanity Torbay</a> <a href="/about/">About</a> <a href="/posts/">Archive</a> <a href="/contact/">Contact</a> <a href="/donate/">Donate</a> <a href="/feed.xml">RSS</a> <label for="menu-checkbox" class="toggle-button" data-open="☰" data-close="☰" onclick></label></nav></header><aside class="sidebar" role="note" style="background-image: url(https://elken.github.io/humanity-torbay//assets/images/man.png)"><div class="cover"><div class="cover-text"><div class="heading"> Contact</div><p> How you can reach us</div></div><div id="switcher"></div></aside><main class="content-wrapper"><article class="page"><h2 id="visit-us">Visit us!</h2><div id="0012d961-4b53-4e82-be6f-4a8cbff3105f" style="width:600px;height:400px;"></div><script type="text/javascript"> jekyllMaps.register( '0012d961-4b53-4e82-be6f-4a8cbff3105f', [{"latitude":50.4682103,"longitude":-3.5337094,"title":"Contact","url":"/contact/","image":""}], {"useCluster":true,"showMarker":true,"showMarkerPopup":true,"customZoom":19} ); </script><p> <table><tbody><tr><td>Monday<td>10am-3pm<tr><td>Tuesday<td>10am-3pm<tr><td>Wednesday<td>CLOSED<tr><td>Thursday<td>10am-3pm<tr><td>Friday<td>10am-2pm<tr><td>Saturday<td>10am-2pm<tr><td>Sunday<td>CLOSED</table><h2 id="call-us">Call us!</h2><p>01803 297537<h2 id="email-us">Email us!</h2><p><a href="mailto:information@humanitytorbay.org.uk">For more information</a><p><a href="mailto:admin@humanitytorbay.org.uk/">To contact the owner of this site</a><h2 id="reach-out-to-us-on-social-media">Reach out to us on social media!</h2><div class="jekyll-twitter-plugin"><a class="twitter-timeline" data-width="500" data-tweet-limit="5" href="https://twitter.com/HumanityTorbay">Tweets by HumanityTorbay</a> <script async="" src="//platform.twitter.com/widgets.js" charset="utf-8"></script></div></article></main><footer class="blog-footer content-wrapper"><p>&copy; <span class="full-year"></span> Humanity Torbay</footer><script src="/assets/js/scripts.js"></script>
